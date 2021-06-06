@@ -6,8 +6,9 @@
     <canvas id="c"></canvas>
     <script src="https://threejs.org/build/three.js"></script>
     <script type="module">
+      import * as THREE from 'three.js';
       function Main() {
-          import * as THREE from 'three.js';
+          
           const canvas = document.querySelector('#c');
           const renderer = new THREE.WebGLRenderer({canvas});
         
