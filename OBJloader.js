@@ -1,4 +1,4 @@
-THREE.OBJLoader = function(manager) {
+OBJLoader = function(manager) {
 
     this.manager = (manager !== undefined) ? manager : THREE.DefaultLoadingManager;
 
@@ -31,7 +31,7 @@ THREE.OBJLoader = function(manager) {
 
 };
 
-THREE.OBJLoader.prototype = {
+OBJLoader.prototype = {
 
     constructor: THREE.OBJLoader,
 
