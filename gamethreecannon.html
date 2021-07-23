@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+    <head>
+        <title>GAME</title>
+    </head>
+    <body>
+        <script type="module">
+            import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r127/build/three.module.js';
+            import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r127/examples/jsm/controls/OrbitControls.js'
+            // first need to upload page to github 
+            //import {OBJLoader} from 'https://tkooik.github.io/test/OBJLoader.js'
+            //import {GLTFLoader} from 'https://tkooik.github.io/test/GLTFLoader.js'
+            import * as CANNON from 'https://tkooik.github.io/test/cannon-es.js'
+            //homemade helper
+            class pairThreeCannonJS{ //must name THREE scene as 'scene' and must name CANNON world as 'world'
+                constructor(mass = 0, material = new THREE.MeshPhongMaterial({color: 0x000000}), type = "box", prama = 0, pramb = 0, pramc = 0){
+                    this.material = material;
+                    this.type = type;
+                    this.geometry;
+                    this.mass = mass;
+                    this.x = 0;
+                    this.y = 0;
+                    this.z = 0;
+                    switch(this.type){
+                        case "box":
+                            this.geometry = new THREE.BoxGeometry(prama, pramb, pramc)
+                            this.halfextends = new CANNON.Vec3(prama, pramb, pramc)
+                            this.body = new CANNON.Body({
+                                mass: this.mass, 
+                                shape: new CANNON.Box(this.halfextends)
+                            })
+                            break;
+                        case "sphere" || "ball":
+                            //!!!UNFINISHED
+                            break;
+                        default:
+                            console.error("error in 'type' pram for pairThreeCannonJS class")
+                            break;
+                    }
+                    this.mesh = new THREE.Mesh(this.geometry, this.material)
+                }
+                add(){
+                    scene.add(this.mesh)
+                    world.addBody(this.body)
+                }
+                update(){
+                    this.mesh.position.copy(this.body.position)
+                    this.mesh.quaternion.copy(this.body.quaternion)
+                }
+                posset(x = this.x, y = this.y, z = this.z){
+                    this.body.position.set(x, y, z)
+                    this.update()
+                }
+            }
+            /*
+            not sure if works!
+            */
+            let key = []
+            document.onkeydown = document.onkeyup = function(e){
+                var e = e || event;
+                key[e.keyCode] = e.type == 'keydown';
+            };
+
+            //setup CANNON world
+            const world = new CANNON.World()
+            world.gravity.set(0, -10, 0)//realistic
+            world.solver.iteration = 10;
+            //setup THREE scene
+                //loaders
+                const textureloader = new THREE.TextureLoader();
+
+                //camera
+                const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000 );
+                camera.position.set(0,1300,0)
+
+                //renderer
+                const renderer = new THREE.WebGLRenderer();
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                document.body.appendChild(renderer.domElement );
+
+                //scene
+                const scene = new THREE.Scene();
+
+                //controles
+                const controls = new OrbitControls(camera, renderer.domElement);
+                controls.update();
+
+                //lighting direct 
+                const color = 0xffffff;
+                const intensity = 0.5;
+                
+                const light = new THREE.DirectionalLight(color, intensity)
+                light.castShadow = true;
+                light.position.set(-2, 7, 9);
+                scene.add(light);
+
+                const lightb = new THREE.DirectionalLight(color, intensity);
+                lightb.castShadow = true;
+                lightb.position.set(2, 7, 9);
+                scene.add(lightb);
+
+                const lightc = new THREE.DirectionalLight(color, intensity);
+                lightc.castShadow = true;
+                lightc.position.set(-2, 8, -9);
+                scene.add(lightc);
+            //objects
+            const ground = new pairThreeCannonJS(0, new THREE.MeshPhongMaterial({color: 0x89ff23}), "box", 1000, 50, 1000)
+            ground.posset(0, -50, 0)
+            ground.add()
+
+            //redering
+            const timeStep = 1 / 60 // seconds
+            //animation
+            let lastCallTime;
+            function update(){
+                //threeMesh.position.copy(cannonBody.position)   
+                //threeMesh.quaternion.copy(cannonBody.quaternion)
+            }
+            function animate() {
+                requestAnimationFrame(animate)
+                const time = performance.now() / 1000 // seconds
+                if (!lastCallTime) {
+                    world.step(timeStep)
+                } else {
+                    const dt = time - lastCallTime
+                    world.step(timeStep, dt)
+                }
+                update()
+                lastCallTime = time
+                controls.update()
+                renderer.render(scene, camera)
+            }
+            
+            animate()
+        </script>
+    </body>
+</html>
